@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ref Rechner</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #f0f2f5;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+      overflow: hidden;
+    }
+
+    .card-title {
+      padding: 0.9rem 1.1rem 0.7rem;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #111;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .group {
+      padding: 0 1.1rem;
+    }
+
+    .group-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #a0aec0;
+      padding-top: 0.65rem;
+      padding-bottom: 0.2rem;
+    }
+
+    .row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #f3f4f6;
+      min-height: 36px;
+      gap: 0.5rem;
+    }
+
+    .row:last-child {
+      border-bottom: none;
+    }
+
+    .row label {
+      font-size: 0.85rem;
+      color: #374151;
+      flex: 1;
+      padding: 0.3rem 0;
+    }
+
+    .row input {
+      width: 80px;
+      flex-shrink: 0;
+      border: none;
+      background: transparent;
+      text-align: right;
+      font-size: 0.9rem;
+      font-family: inherit;
+      color: #111;
+      padding: 0.3rem 0;
+    }
+
+    .row input:focus {
+      outline: none;
+      color: #2563eb;
+    }
+
+    .row input::placeholder {
+      color: #d1d5db;
+    }
+
+    .results {
+      margin: 0.75rem 1.1rem 1.1rem;
+      background: #2563eb;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .result-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.65rem 1rem;
+      gap: 0.5rem;
+    }
+
+    .result-row:not(:last-child) {
+      border-bottom: 1px solid rgba(255,255,255,0.15);
+    }
+
+    .result-label {
+      font-size: 0.84rem;
+      color: rgba(255,255,255,0.75);
+    }
+
+    .result-value {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .result-value.empty {
+      font-size: 1rem;
+      font-weight: 400;
+      color: rgba(255,255,255,0.35);
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="card-title">Ref Rechner</div>
+
+    <div class="group">
+      <div class="group-label">Studium</div>
+      <div class="row">
+        <label>Bachelor Note</label>
+        <input type="text" id="bachelor" inputmode="decimal" placeholder="1,5">
+      </div>
+      <div class="row">
+        <label>Master Note</label>
+        <input type="text" id="master" inputmode="decimal" placeholder="1,5">
+      </div>
+      <div class="row">
+        <label>Leistungsziffer</label>
+        <input type="text" id="leistungsziffer" inputmode="decimal" placeholder="60">
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Schulleitergutachten</div>
+      <div class="row">
+        <label>Schulrecht</label>
+        <input type="text" id="schulrecht" inputmode="decimal" placeholder="2,0">
+      </div>
+      <div class="row">
+        <label>Pädagogisches Kolloquium</label>
+        <input type="text" id="paedKollo" inputmode="decimal" placeholder="2,0">
+      </div>
+      <div class="row">
+        <label>Lehrprobe Fach 1</label>
+        <input type="text" id="lehrprobe1" inputmode="decimal" placeholder="2,0">
+      </div>
+      <div class="row">
+        <label>Kolloquium Fach 1</label>
+        <input type="text" id="kollo1" inputmode="decimal" placeholder="2,0">
+      </div>
+      <div class="row">
+        <label>Lehrprobe Fach 2</label>
+        <input type="text" id="lehrprobe2" inputmode="decimal" placeholder="2,0">
+      </div>
+      <div class="row">
+        <label>Kolloquium Fach 2</label>
+        <input type="text" id="kollo2" inputmode="decimal" placeholder="2,0">
+      </div>
+    </div>
+
+    <div class="results">
+      <div class="result-row">
+        <span class="result-label">Ref Schnitt</span>
+        <span class="result-value empty" id="out-schnitt">—</span>
+      </div>
+      <div class="result-row">
+        <span class="result-label">Note Schulleitergutachten</span>
+        <span class="result-value empty" id="out-schulleiter">—</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const ids = ['bachelor', 'master', 'leistungsziffer', 'schulrecht', 'paedKollo', 'lehrprobe1', 'kollo1', 'lehrprobe2', 'kollo2'];
+    ids.forEach(id => document.getElementById(id).addEventListener('input', calculate));
+
+    function val(id) {
+      const raw = document.getElementById(id).value.replace(',', '.');
+      const v = parseFloat(raw);
+      return isNaN(v) ? null : v;
+    }
+
+    function setResult(id, value) {
+      const el = document.getElementById(id);
+      if (value === null) {
+        el.textContent = '—';
+        el.classList.add('empty');
+      } else {
+        el.textContent = value.toFixed(2);
+        el.classList.remove('empty');
+      }
+    }
+
+    function calculate() {
+      const bachelor   = val('bachelor');
+      const master     = val('master');
+      const leistung   = val('leistungsziffer');
+      const schulrecht = val('schulrecht');
+      const paedKollo  = val('paedKollo');
+      const lehrprobe1 = val('lehrprobe1');
+      const kollo1     = val('kollo1');
+      const lehrprobe2 = val('lehrprobe2');
+      const kollo2     = val('kollo2');
+
+      const refSchnitt = (bachelor !== null && master !== null && leistung !== null)
+        ? (leistung - 10 * bachelor - 10 * master) / 20
+        : null;
+
+      setResult('out-schnitt', refSchnitt);
+
+      const gutachtenNote = [schulrecht, paedKollo, lehrprobe1, kollo1, lehrprobe2, kollo2, refSchnitt].every(v => v !== null)
+        ? (25 * refSchnitt - schulrecht - paedKollo * 3 - lehrprobe1 * 5 - kollo1 * 3 - lehrprobe2 * 5 - kollo2 * 3) / 5
+        : null;
+
+      setResult('out-schulleiter', gutachtenNote);
+    }
+  </script>
+</body>
+</html>
