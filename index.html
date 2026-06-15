@@ -69,24 +69,27 @@
     }
 
     .row input {
-      width: 80px;
+      width: 88px;
       flex-shrink: 0;
-      border: none;
-      background: transparent;
+      border: 1.5px solid #d1d5db;
+      border-radius: 7px;
+      background: #f9fafb;
       text-align: right;
       font-size: 0.9rem;
       font-family: inherit;
       color: #111;
-      padding: 0.3rem 0;
+      padding: 0.28rem 0.55rem;
     }
 
     .row input:focus {
       outline: none;
+      border-color: #2563eb;
+      background: #eff6ff;
       color: #2563eb;
     }
 
     .row input::placeholder {
-      color: #d1d5db;
+      color: #c0c4cc;
     }
 
     .results {
@@ -147,7 +150,7 @@
     </div>
 
     <div class="group">
-      <div class="group-label">Schulleitergutachten</div>
+      <div class="group-label">Ref Noten</div>
       <div class="row">
         <label>Schulrecht</label>
         <input type="text" id="schulrecht" inputmode="decimal" placeholder="2,0">
